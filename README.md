@@ -1,240 +1,147 @@
-🧠 Alzheimer’s Detection from MRI using 2D CNN with Explainable AI (Grad-CAM)
-Overview
+🧠 Alzheimer’s MRI Detection using CNN & Grad-CAM
 
-This project implements an end-to-end deep learning system for detecting Alzheimer’s disease patterns from brain MRI scans using a 2D Convolutional Neural Network (CNN).
-To improve trust and interpretability, the system integrates Grad-CAM (Gradient-weighted Class Activation Mapping) to visualize which regions of the MRI influenced the model’s predictions.
+An end-to-end deep learning system for Alzheimer’s disease detection from brain MRI scans, built using PyTorch and Streamlit, with a strong focus on explainable AI through Grad-CAM visualizations.
 
+🚀 Project Overview
 
+Magnetic Resonance Imaging (MRI) scans are inherently 3D volumetric data, making direct modeling computationally expensive and less interpretable.
+This project adopts a slice-based learning approach, converting 3D MRI volumes into 2D slices and applying a 2D Convolutional Neural Network (CNN) for classification.
 
-&nbsp;🖥️ Dashboard Overview
+To improve transparency and trust, Grad-CAM is used to highlight brain regions that most influence the model’s predictions.
 
-Interactive Streamlit dashboard for MRI upload, slice navigation, and patient-level prediction.
+An interactive Streamlit dashboard allows users to upload MRI scans, visualize predictions, and inspect Grad-CAM heatmaps.
 
+🧩 Key Features
 
+📊 Slice-based learning from 3D MRI volumes
 
-!\[Dashboard UI](assets/dashboard\_ui.png)
+🧠 2D CNN for Alzheimer vs Normal classification
 
+🧮 Patient-level prediction via slice aggregation
 
+🔍 Grad-CAM based explainability
 
-&nbsp;🔍 Model Output \& Explainability
+🖥️ Interactive Streamlit dashboard
 
-Grad-CAM visualization highlighting brain regions influencing Alzheimer’s prediction.
+📄 Automated prediction report generation
 
+⚖️ Ethical handling of medical data (no data pushed to GitHub)
 
+🗂 Dataset
 
-!\[Grad-CAM Output](assets/model\_output\_gradcam.png)
+Dataset Used: OASIS (Open Access Series of Imaging Studies)
 
+Data Type: 3D MRI brain scans (.nii, .hdr, .img)
 
+Labels: Normal / Alzheimer’s Disease
 
-⚠️ Disclaimer:
-This project is intended for educational and research purposes only. It is not a clinically certified medical system and must not be used for real-world medical diagnosis.
+⚠️ Note:
+Medical data is not included in this repository for ethical and legal reasons.
 
-Motivation
+🔬 Methodology
+1️⃣ MRI Preprocessing & Slicing
 
-Alzheimer’s disease is a progressive neurodegenerative disorder where early detection can significantly impact patient care.
-While deep learning models can achieve high accuracy, they often act as black boxes. In medical imaging, explainability is critical.
+Each 3D MRI volume is sliced along the axial plane
 
-This project focuses on:
+Central and informative slices are selected
 
-Building a technically correct ML pipeline
+Intensity normalization is applied
 
-Providing model explainability
+2️⃣ Slice-Level Prediction
 
-Designing a realistic, hospital-style decision logic (confidence thresholds, uncertainty handling)
+Each slice is independently classified using a 2D CNN
 
-Dataset
+Model outputs probabilities for:
 
-OASIS (Open Access Series of Imaging Studies)
+Normal
 
-MRI volumes with clinical labels derived from CDR (Clinical Dementia Rating)
+Alzheimer’s Disease
 
-CDR = 0 → Normal
+3️⃣ Patient-Level Aggregation
 
-CDR > 0 → Alzheimer / Dementia
-
-Each MRI scan is a 3D volume (e.g., 256 × 256 × 160) consisting of multiple 2D brain slices.
-
-Why a 2D CNN?
-
-Instead of using a computationally expensive 3D CNN, this project uses a 2D CNN trained on individual MRI slices.
-
-Key reasons:
-
-Lower computational cost
-
-Faster experimentation
-
-Common approach in medical imaging when slice-level annotations are unavailable
-
-Training strategy (weak supervision):
-
-Each slice inherits the patient-level diagnosis
-
-The model learns statistical structural patterns across many slices and patients
-
-Model Architecture
-
-Input: 128 × 128 grayscale MRI slice
-
-Convolutional blocks with BatchNorm and ReLU
-
-Progressive spatial downsampling
-
-Fully connected classifier with dropout
-
-Output:
-
-Probability of Normal
-
-Probability of Alzheimer
-
-Loss function: Cross-Entropy Loss
-Optimizer: Adam
-
-Inference Pipeline
-
-Load MRI volume (.nii, .nii.gz, or .hdr + .img)
-
-Normalize voxel intensities
-
-Extract multiple 2D slices from the volume
-
-Run each slice through the trained 2D CNN
-
-Obtain slice-level probabilities:
-
-Prob(Normal), Prob(Alzheimer)
-
-Patient-Level Aggregation (Important)
-
-A single MRI slice is not sufficient for diagnosis.
-
-To address this:
-
-The system evaluates N slices (default = 20) uniformly sampled across the brain
-
-Aggregates predictions using:
+Slice-level predictions are aggregated using:
 
 Mean probability across slices
 
-Majority voting across confident slices
+Majority voting
 
-This mimics how radiologists scroll through MRI volumes.
+Confidence thresholds
 
-Confidence Threshold \& Uncertainty Handling
+This yields a patient-level prediction rather than relying on a single slice.
 
-A confidence threshold (default = 0.65) is applied symmetrically to both classes.
+4️⃣ Explainability with Grad-CAM
 
-Decision logic:
-If Prob(Alzheimer) ≥ threshold → Alzheimer
-Else if Prob(Normal) ≥ threshold → Normal
-Else → Uncertain
+Grad-CAM generates heatmaps from the final convolutional layers
 
-Why this matters:
+Highlights brain regions influencing predictions
 
-Prevents forced predictions
+Improves interpretability and transparency
 
-Reduces false positives
+🧠 Model Architecture
 
-Reflects real-world medical AI safety practices
+Input: 128 × 128 grayscale MRI slice
 
-Explainability with Grad-CAM
-What Grad-CAM does:
+Convolutional blocks with BatchNorm & ReLU
 
-Grad-CAM visualizes which regions of the MRI slice most influenced the model’s prediction.
+Adaptive pooling for spatial consistency
 
-How it works (high-level):
+Fully connected classifier
 
-Computes gradients of the target class score (e.g., Alzheimer)
+Output: Probability scores for each class
 
-Weights feature maps from the final convolution layer
+🖥️ Dashboard Preview
+Dashboard Interface
 
-Produces a coarse heatmap highlighting influential regions
+Interactive MRI upload, slice navigation, and prediction display.
 
-Important notes:
+Grad-CAM Visualization
 
-Grad-CAM does not identify medical biomarkers
+Heatmap showing regions contributing to Alzheimer’s prediction.
 
-It shows model attention, not clinical localization
+🛠 Tech Stack
 
-Blurry heatmaps are expected and correct (deep-layer semantics)
+Deep Learning: PyTorch
 
-Dashboard Features
+Explainability: Grad-CAM
 
-Built using Streamlit, the dashboard provides:
+Data Processing: NumPy, NiBabel
 
-MRI slice viewer with slider
+Dashboard: Streamlit
 
-Grad-CAM overlay visualization
+Visualization: Matplotlib, PIL
 
-Slice-level prediction with probabilities
+▶️ How to Run Locally
+# Clone repository
+git clone https://github.com/lost-cupcake/alzheimers-mri-detection.git
+cd alzheimers-mri-detection
 
-Patient-level prediction (mean + majority vote)
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate
 
-Adjustable confidence threshold
+# Install dependencies
+pip install -r requirements.txt
 
-Uncertainty-aware outputs (Normal / Alzheimer / Uncertain)
+# Run dashboard
+streamlit run src/dashboard/app.py
 
-PDF report export for documentation
+⚠️ Disclaimer
 
-Evaluation
+This project is intended strictly for educational and research purposes.
+It is NOT a medical device and must NOT be used for clinical diagnosis or treatment.
 
-High validation performance on OASIS dataset
+📌 Future Improvements
 
-ROC-AUC ≈ 1.0 on internal validation
+3D CNN or hybrid 2D–3D modeling
 
-⚠️ Note:
-High ROC-AUC indicates strong dataset-level separability, not guaranteed real-world performance.
+Multi-class Alzheimer staging
 
-Limitations
+Radiologist-in-the-loop validation
 
-Slice-level training with patient-level labels (weak supervision)
+Model calibration & uncertainty estimation
 
-No longitudinal or multi-modal clinical data
+Regulatory-grade evaluation pipelines
 
-Not clinically validated
+👨‍💻 Author
 
-No regulatory approval (FDA / CDSCO / CE)
-
-Future Work
-
-Patient-level 3D CNN or 2.5D multi-slice models
-
-Multi-class staging (Normal / MCI / Alzheimer)
-
-External validation on ADNI dataset
-
-Clinical collaboration with neurologists/radiologists
-
-Regulatory-compliant evaluation pipeline
-
-Tech Stack
-
-Python
-
-PyTorch
-
-NumPy
-
-Nibabel
-
-Matplotlib
-
-Streamlit
-
-ReportLab (PDF export)
-
-Final Note
-
-This project demonstrates:
-
-Strong ML system design
-
-Realistic medical AI decision logic
-
-Explainable AI integration
-
-Production-style debugging and UI thinking
-
-It is company-level and resume-worthy, while being responsibly framed as a research and educational system.
-
+GitHub: lost-cupcake
