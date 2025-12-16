@@ -1,0 +1,8 @@
+
+nibabel
+numpy
+pillow
+torch
+torchvision
+streamlit
+reportlab

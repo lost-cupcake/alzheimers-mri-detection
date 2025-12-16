@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Data (medical - DO NOT UPLOAD)
+dataset/
+*.nii
+*.nii.gz
+*.hdr
+*.img
+temp_upload*
+
+# Models
+saved_models/*.pth
+
+# OS
+.DS_Store
+Thumbs.db
