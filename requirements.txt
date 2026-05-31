@@ -1,8 +1,10 @@
-
 nibabel
 numpy
 pillow
 torch
 torchvision
-streamlit
-reportlab
+scikit-learn
+matplotlib
+fastapi
+uvicorn
+python-multipart

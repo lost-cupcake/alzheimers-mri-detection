@@ -16,6 +16,11 @@ temp_upload*
 # Models
 saved_models/*.pth
 
+# Frontend (React / Vite)
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
 # OS
 .DS_Store
 Thumbs.db
