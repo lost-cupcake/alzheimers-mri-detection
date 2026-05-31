@@ -1,6 +1,6 @@
-
 import torch
 import torch.nn as nn
+
 
 class Alzheimer2DCNN(nn.Module):
     def __init__(self, num_classes: int = 2):
@@ -24,14 +24,15 @@ class Alzheimer2DCNN(nn.Module):
             nn.Conv2d(128, 256, kernel_size=3, padding=1),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
-            nn.AdaptiveMaxPool2d((7, 7))
+            nn.AdaptiveMaxPool2d((7, 7)),
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
+            nn.Dropout(0.3),
             nn.Linear(256 * 7 * 7, 512),
             nn.ReLU(inplace=True),
             nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+            nn.Linear(512, num_classes),
         )
 
     def forward(self, x):

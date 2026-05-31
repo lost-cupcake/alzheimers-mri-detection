@@ -1,38 +1,38 @@
 import os
-import sys
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torchvision.models as models
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-sys.path.append(ROOT)
-
-from src.model.model_2d_cnn import Alzheimer2DCNN
 from src.training.utils import get_slice_dataloaders, save_model
 
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 PROCESSED_SLICES_DIR = os.path.join(ROOT, "dataset", "OASIS1", "processed", "slices")
-MODEL_PATH = os.path.join(ROOT, "saved_models", "best_2d_cnn.pth")
+MODEL_PATH = os.path.join(ROOT, "saved_models", "best_resnet18.pth")
 
 
-def train_2d_cnn(
-    epochs: int = 40,
-    batch_size: int = 32,
-    lr: float = 1e-4,
-    weight_decay: float = 1e-4,
-    patience: int = 6,
-    device: str = "cuda" if torch.cuda.is_available() else "cpu",
-):
-    train_loader, val_loader = get_slice_dataloaders(PROCESSED_SLICES_DIR, batch_size=batch_size)
+def build_grayscale_resnet18(num_classes=2):
+    m = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+    # adapt 3-channel pretrained conv to 1 channel, preserving learned features
+    old_w = m.conv1.weight.data                       # [64, 3, 7, 7]
+    m.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+    m.conv1.weight.data = old_w.mean(dim=1, keepdim=True)
+    m.fc = nn.Sequential(nn.Dropout(0.5), nn.Linear(m.fc.in_features, num_classes))
+    return m
 
-    model = Alzheimer2DCNN(num_classes=2).to(device)
 
-    # class 0 = Alzheimer's (minority) gets higher weight; adjust if your balance differs
-    class_weights = torch.tensor([2.2, 1.0], device=device)
+def train_resnet(epochs=30, batch_size=32, lr=1e-4, weight_decay=1e-4,
+                 patience=5, device="cuda" if torch.cuda.is_available() else "cpu"):
+    train_loader, val_loader = get_slice_dataloaders(
+        PROCESSED_SLICES_DIR, batch_size=batch_size, img_size=224)
+
+    model = build_grayscale_resnet18(num_classes=2).to(device)
+
+    class_weights = torch.tensor([2.2, 1.0], device=device)  # class 0 = Alzheimer's (minority)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
-    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     best_val_acc, no_improve = 0.0, 0
-
     for epoch in range(1, epochs + 1):
         model.train()
         running = 0.0
@@ -59,7 +59,7 @@ def train_2d_cnn(
         if val_acc > best_val_acc:
             best_val_acc, no_improve = val_acc, 0
             save_model(model, MODEL_PATH)
-            print(f"[INFO] New best saved: {best_val_acc:.4f}")
+            print(f"[INFO] New best ResNet saved: {best_val_acc:.4f}")
         else:
             no_improve += 1
             if no_improve >= patience:
@@ -70,4 +70,4 @@ def train_2d_cnn(
 
 
 if __name__ == "__main__":
-    train_2d_cnn()
+    train_resnet()
