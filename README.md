@@ -4,7 +4,7 @@ A full-stack deep learning project that detects Alzheimer's disease from brain M
 
 This project is as much about **rigorous, honest evaluation** as it is about the model. Two issues that commonly inflate medical-imaging results — patient-level data leakage and overfitting — were identified and addressed here, and the numbers reported are the corrected, honest ones.
 
-![Dashboard](assets/dashboard.png)
+![Dashboard](assets/Dashboard-1.png)
 
 ---
 
